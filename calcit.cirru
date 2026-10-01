@@ -105,7 +105,7 @@
               (:some control)
                 reset! *reel $ typed/apply-control updater @*reel control
               (:none)
-                reset! *reel $ typed/record-op updater @*reel (decode-map-as op app.schema/Op) (generate-id!) (host/now-ms)
+                reset! *reel $ typed/record-op updater @*reel (app.schema/normalize-op op) (generate-id!) (host/now-ms)
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ [] 'Enum
@@ -190,11 +190,29 @@
             :states $ :: 'Map 'Tag 'Dynamic
           :examples $ []
           :schema $ :: 'StructDef
+        'normalize-op $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn normalize-op (op)
+            match op
+              (:states cursor state)
+                Op :states
+                  decode-map-as cursor $ :: 'List 'Dynamic
+                  , state
+              (:hydrate-storage data)
+                if
+                  and (struct? data) (&struct:matches? data Store)
+                  Op :hydrate-storage $ assert-type data 'app.schema/Store
+                  raise "|Invalid hydration Store"
+              _ $ raise "|Unknown application operation"
+          :examples $ []
+          :schema $ :: 'Fn $ {} (:return 'app.schema/Op)
+            :args $ [] 'Enum
         'normalize-store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn normalize-store (data)
-            match (try-decode-map-as data Store)
-              (:ok restored) restored
-              (:err _) store
+            if (struct? data)
+              if (&struct:matches? data Store) (assert-type data 'app.schema/Store) store
+              match (try-decode-map-as data Store)
+                (:ok restored) restored
+                (:err _) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
             :args $ [] 'Dynamic
