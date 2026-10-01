@@ -24,30 +24,30 @@
                   when dev? $ comp-typed-reel (>> states :reel) reel $ {}
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] $ :: 'reel.typed/State 'Enum 'app.schema/Store
+            :args $ [] $ :: 'reel.typed/State 'app.schema/Op 'app.schema/Store
         'connect-video! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn connect-video! (el)
             hint-fn $ {} $ :async true
-            let
-                video-el $ .unwrap $ browser/element-query-selector el |video
-              browser/element-set-attribute! video-el |playsinline |
-              browser/element-set-attribute! video-el |autoplay |
+            try
               let
-                  constraints $ js-object (:audio false)
-                    :video $ js-object
-                  stream $ js-await $ js/navigator.mediaDevices.getUserMedia constraints
-                set! (.-srcObject video-el) stream
-                println |Connected-Video.
-                , &unit
+                  video-el $ .unwrap $ browser/element-query-selector el |video
+                browser/element-set-attribute! video-el |playsinline |
+                browser/element-set-attribute! video-el |autoplay |
+                let
+                    constraints $ js-object (:audio false)
+                      :video $ js-object
+                    stream $ js-await $ js/navigator.mediaDevices.getUserMedia constraints
+                  set! (.-srcObject video-el) stream
+                  println |Connected-Video.
+                  , &unit
+              fn (e) (js/console.error e) &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:async true) (:return 'Unit)
             :args $ [] 'js-ffi.browser/DomElementHost
             :features $ #{} :js-ffi
         'effect-load-video $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defeffect effect-load-video () (action el at?)
-            if (= action :mount)
-              try (connect-video! el)
-                fn (e) (js/console.error e)
+            when (= action :mount) (connect-video! el) &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Effect)
             :args $ []
@@ -97,7 +97,7 @@
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defatom *reel (typed/new-reel schema/store)
           :examples $ []
-          :schema $ :: 'Ref $ :: 'reel.typed/State 'Enum 'app.schema/Store
+          :schema $ :: 'Ref $ :: 'reel.typed/State 'app.schema/Op 'app.schema/Store
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op)
             when config/dev? $ println |Dispatch: op
@@ -105,7 +105,7 @@
               (:some control)
                 reset! *reel $ typed/apply-control updater @*reel control
               (:none)
-                reset! *reel $ typed/record-op updater @*reel op (generate-id!) (host/now-ms)
+                reset! *reel $ typed/record-op updater @*reel (decode-map-as op app.schema/Op) (generate-id!) (host/now-ms)
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ [] 'Enum
@@ -179,6 +179,12 @@
             js-ffi.shared :as host
     'app.schema $ %{} 'FileEntry
       :defs $ {}
+        'Op $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defenum Op
+            :states (:: 'List 'Dynamic) 'Dynamic
+            :hydrate-storage 'app.schema/Store
+          :examples $ []
+          :schema $ :: 'EnumDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store
             :states $ :: 'Map 'Tag 'Dynamic
@@ -186,21 +192,12 @@
           :schema $ :: 'StructDef
         'normalize-store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn normalize-store (data)
-            if
-              and (struct? data) (&struct:matches? data Store)
-              assert-type data Store
-              if (map? data)
-                match (get data :states)
-                  (:some states)
-                    if (map? states)
-                      Store :states $ assert-type states $ :: Map Tag Dynamic
-                      , store
-                  (:none) store
-                , store
+            match (try-decode-map-as data Store)
+              (:ok restored) restored
+              (:err _) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
-            :args $ [] 'T
-            :generics $ [] 'T
+            :args $ [] 'Dynamic
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store
             Store :states $ {} $ :cursor ([])
@@ -214,16 +211,12 @@
           :code $ quote $ defn updater (store op op-id op-time)
             match op
               (:states cursor state)
-                Store :states $ assert-type
-                  update-state-tree store.:states
-                    assert-type cursor $ :: List Dynamic
-                    , state
-                  :: Map Tag Dynamic
-              (:hydrate-storage data) (normalize-store data)
+                Store :states $ decode-map-as (update-state-tree store.:states cursor state) (:: 'Map 'Tag 'Dynamic)
+              (:hydrate-storage data) data
               _ $ do (println |unknown-op op) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
-            :args $ [] 'app.schema/Store 'Enum 'String 'Number
+            :args $ [] 'app.schema/Store 'app.schema/Op 'String 'Number
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require
