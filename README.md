@@ -8,16 +8,22 @@ Thanks to https://codepen.io/harunpehlivan/pen/xerNpj .
 
 ### Workflow
 
-This migration targets stable Calcit/procs 0.27.0, Node 24 and Yarn 4.18.0 with
-canonical `calcit.cirru` and `deps.cirru`, typed Reel/Store/Op and explicit browser
-operations. The original
-`workflow` storage key and 60-second persistence interval are retained, and
-hydration accepts the previous map-shaped store. Camera audio remains disabled;
-inline autoplay and mirrored video styling are preserved.
-Storage is decoded once into Store, with invalid shape falling back to the
-default. Application operations have explicit states/hydrate-storage payloads;
-Reel controls are handled separately. Camera Promise failures are caught inside
-the async function that awaits getUserMedia, not around an unawaited call.
+Use the paired Calcit/procs 0.30.1-alpha.5 candidate, Node 24 and Yarn 4.18.0
+with canonical `calcit.cirru` and `deps.cirru`. Formal 0.30.1 CLI assets and the
+matching npm runtime are not yet available. Respo 0.16.122, UI 0.7.41 and
+js-ffi 0.2.3 use exact formal releases.
+
+This page only displays camera video: it no longer runs the template Reel,
+Store, devtools panel or a periodic localStorage writer. Existing `workflow`
+archives are neither read, overwritten nor deleted. There is no application
+editing state to migrate.
+
+Camera audio remains disabled. Inline autoplay, mirrored video and the
+existing styling are preserved; playback is explicitly muted. Permission
+failures appear on the page. Unmount stops owned tracks, including a camera
+request that resolves after unmount. A small external-object API keeps the
+MediaStream and Promise inside `camera.mjs`; Calcit checks its member shape and
+uses js-ffi's existing DOM boundary instead of pretending opaque values are typed.
 
 `VITE_BASE_URL` selects frontend asset URLs; local builds remain relative. CI
 uses one prefix for building, COS upload and released v1.2.0's built-in HTML
@@ -33,7 +39,9 @@ upload verification script or defensive test suite.
 ```bash
 caps --strict --ci
 yarn install --immutable
-calcit --check-only
+calcit --check-only --all-defs
+calcit fix --workflow strict --verify
+node --test camera.test.mjs
 yarn build
 ```
 
@@ -41,13 +49,13 @@ yarn build
 initially and starts Vite; run `calcit calcit.cirru -w` in another terminal for
 live edits, without concurrently.
 
-CI checks strict published dependencies, canonical source, the entry and all
-application public definitions before codegen/Vite. Current formal 0.27 macOS
-entry/public checks pass; the previous Respo ToString report (#198) remains
-open upstream but did not recur in this check. Official Linux CI is also checked.
-Browser/camera behavior and actual
-main COS/server deployment must be verified separately; configuration alone
-does not prove they succeeded.
+CI independently resolves declared dependencies, checks canonical source and
+all definitions, verifies the strict workflow, runs three camera lifecycle
+tests and builds the frontend. No new test dependencies or upload checker are
+needed. Local browser acceptance uses a synthetic canvas MediaStream, actual
+DOM/video playback and the actual generated effect method. This does not claim
+real hardware/permission acceptance or production deployment; never enable a
+user's camera or microphone without authorization.
 
 https://github.com/calcit-lang/respo-calcit-workflow
 

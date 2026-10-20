@@ -5,53 +5,76 @@
   :entries $ {} $ :default
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
-      :modules $ [] |respo.calcit/ |respo-ui.calcit/ |reel.calcit/ |js-ffi/
+      :modules $ [] |respo.calcit/ |respo-ui.calcit/ |js-ffi/
       :type-slots $ {}
   :files $ {}
+    'app.camera $ %{} 'FileEntry
+      :defs $ {}
+        'CameraAPI $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ deftrait CameraAPI
+            .mount! $ :: 'Fn $ {}
+              :args $ [] 'app.camera/CameraAPI 'js-ffi.browser/DomElementHost
+              :return 'Unit
+            .unmount! $ :: 'Fn $ {}
+              :args $ [] 'app.camera/CameraAPI 'js-ffi.browser/DomElementHost
+              :return 'Unit
+          :examples $ []
+          :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
+          :schema $ :: 'Trait
+        'camera-api $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn camera-api () (js-cast camera 'CameraAPI)
+          :examples $ []
+          :schema $ :: 'Fn $ {} (:return 'app.camera/CameraAPI)
+            :args $ []
+            :features $ #{} :js-ffi
+        'connect-video! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn connect-video! (root)
+            let
+                api $ camera-api
+              api .mount! $ browser/element-host root
+            , &unit
+          :examples $ []
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ [] 'Dynamic
+            :features $ #{} :js-ffi
+        'disconnect-video! $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defn disconnect-video! (root)
+            let
+                api $ camera-api
+              api .unmount! $ browser/element-host root
+            , &unit
+          :examples $ []
+          :schema $ :: 'Fn $ {} (:return 'Unit)
+            :args $ [] 'Dynamic
+            :features $ #{} :js-ffi
+      :ns $ %{} 'NsEntry (:doc |)
+        :code $ quote $ ns app.camera
+          :require (|../camera.mjs :default camera) (js-ffi.browser :as browser)
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
         'comp-container $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defcomp comp-container (reel)
-            let
-                store $ :store reel
-                states $ :states store
-              [] (effect-load-video)
-                div
-                  {}
-                    :class-name $ str-spaced css/global css/row css/fullscreen css/flex
-                    :style $ {} $ :background-color (hsl 170 20 18)
-                  create-element :video $ {} $ :class-name style-video
-                  when dev? $ comp-typed-reel (>> states :reel) reel $ {}
+          :code $ quote $ defcomp comp-container ()
+            [] (effect-load-video)
+              div
+                {}
+                  :class-name $ str-spaced css/global css/row css/fullscreen css/flex
+                  :style $ {} $ :background-color (hsl 170 20 18)
+                create-element :video $ {} $ :class-name style-video
+                div $ {} (:class-name |camera-status) (:role |status) (:aria-live |polite) (:inner-text "|Waiting for camera")
+                  :style $ {} (:position :fixed) (:bottom 16) (:left 16)
+                    :color $ hsl 0 0 90
+                    :font-size 14
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] $ :: 'reel.typed/State 'app.schema/Op 'app.schema/Store
-        'connect-video! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn connect-video! (el)
-            hint-fn $ {} $ :async true
-            try
-              let
-                  video-el $ .unwrap $ browser/element-query-selector el |video
-                browser/element-set-attribute! video-el |playsinline |
-                browser/element-set-attribute! video-el |autoplay |
-                let
-                    constraints $ js-object (:audio false)
-                      :video $ js-object
-                    stream $ js-await $ js/navigator.mediaDevices.getUserMedia constraints
-                  set! (.-srcObject video-el) stream
-                  println |Connected-Video.
-                  , &unit
-              fn (e) (js/console.error e) &unit
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:async true) (:return 'Unit)
-            :args $ [] 'js-ffi.browser/DomElementHost
-            :features $ #{} :js-ffi
+            :args $ []
         'effect-load-video $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defeffect effect-load-video () (action el at?)
-            when (= action :mount) (connect-video! el) &unit
+            case-default action &unit
+              :mount $ camera/connect-video! el
+              :unmount $ camera/disconnect-video! el
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Effect)
             :args $ []
-            :features $ #{} :js-ffi
         'style-video $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle style-video
             {}
@@ -69,86 +92,28 @@
           :schema $ :: 'String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
-          :require (respo-ui.core :as ui)
-            respo.core :refer $ defcomp defeffect <> >> div button textarea span input create-element
-            respo.comp.space :refer $ =<
-            app.config :refer $ dev?
+          :require
+            respo.core :refer $ defcomp defeffect div create-element
             respo.css :refer $ defstyle
             respo-ui.css :as css
             respo.util.format :refer $ hsl
-            reel.comp.reel :refer $ comp-typed-reel
-            js-ffi.browser :as browser
-    'app.config $ %{} 'FileEntry
-      :defs $ {}
-        'dev? $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def dev?
-            = |dev $ .unwrap-or (get-env |mode) |release
-          :examples $ []
-          :schema $ :: 'Bool
-        'site $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def site
-            {} $ :storage-key |workflow
-          :examples $ []
-          :schema $ :: 'Map 'Tag 'String
-      :ns $ %{} 'NsEntry (:doc |)
-        :code $ quote $ ns app.config
+            app.camera :as camera
     'app.main $ %{} 'FileEntry
       :defs $ {}
-        '*reel $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defatom *reel (typed/new-reel schema/store)
-          :examples $ []
-          :schema $ :: 'Ref $ :: 'reel.typed/State 'app.schema/Op 'app.schema/Store
-        'dispatch! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn dispatch! (op)
-            when config/dev? $ println |Dispatch: op
-            match (typed/decode-control op)
-              (:some control)
-                reset! *reel $ typed/apply-control updater @*reel control
-              (:none)
-                reset! *reel $ typed/record-op updater @*reel (app.schema/normalize-op op) (generate-id!) (host/now-ms)
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Enum
-            :features $ #{} :js-ffi
         'main! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn main! ()
-            println |Running-mode: $ if config/dev? |dev |release
-            if config/dev? $ load-console-formatter!
-            render-app!
-            add-watch *reel :changes $ fn (reel prev) (render-app!)
-            listen-devtools! |k dispatch!
-            browser/add-event-listener! |beforeunload $ fn (event) (persist-storage!)
-            browser/set-interval! persist-storage! 60000
-            match
-              browser/storage-get $ .unwrap $ get config/site :storage-key
-              (:some raw)
-                dispatch! $ :: :hydrate-storage $ schema/normalize-store (parse-cirru-edn raw)
-              (:none) &unit
-            println |App-started.
+          :code $ quote $ defn main! () (render-app!) (println "|Camera page started.") &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
-            :features $ #{} :js-ffi
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mount-target
-            .unwrap $ browser/query-selector |.app
+            option:unwrap $ dom/query-selector |.app
           :examples $ []
-          :schema $ :: 'js-ffi.browser/DomElementHost
-        'persist-storage! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn persist-storage! () (println |persist)
-            browser/storage-set!
-              .unwrap $ get config/site :storage-key
-              format-cirru-edn $ :store @*reel
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ :: 'respo.dom/DomElement
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (js-nullish? build-errors)
-              do (remove-watch *reel :changes) (clear-cache!)
-                add-watch *reel :changes $ fn (reel prev) (render-app!)
-                reset! *reel $ typed/refresh updater @*reel schema/store
-                hud! |ok~ |Ok
+              do (clear-cache!) (render-app!) (hud! |ok~ |Ok)
               hud! |error build-errors
             , &unit
           :examples $ []
@@ -157,86 +122,15 @@
             :features $ #{} :js-ffi
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
-            render! mount-target (comp-container @*reel) dispatch!
+            render-with! mount-target comp-container $ fn (op) &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
-            respo.core :refer $ render! clear-cache!
+            respo.core :refer $ render-with! clear-cache!
+            respo.ffi.browser :as dom
             app.comp.container :refer $ comp-container
-            app.updater :refer $ updater
-            app.schema :as schema
-            reel.util :refer $ listen-devtools!
-            reel.core :refer $ reel-updater refresh-reel
-            reel.schema :as reel-schema
-            app.config :as config
             |./calcit.build-errors :default build-errors
             |bottom-tip :default hud!
-            reel.typed :as typed
-            js-ffi.browser :as browser
-            js-ffi.shared :as host
-    'app.schema $ %{} 'FileEntry
-      :defs $ {}
-        'Op $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defenum Op
-            :states (:: 'List 'Dynamic) 'Dynamic
-            :hydrate-storage 'app.schema/Store
-          :examples $ []
-          :schema $ :: 'EnumDef
-        'Store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct Store
-            :states $ :: 'Map 'Tag 'Dynamic
-          :examples $ []
-          :schema $ :: 'StructDef
-        'normalize-op $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn normalize-op (op)
-            match op
-              (:states cursor state)
-                Op :states
-                  decode-map-as cursor $ :: 'List 'Dynamic
-                  , state
-              (:hydrate-storage data)
-                if
-                  and (struct? data) (&struct:matches? data Store)
-                  Op :hydrate-storage $ assert-type data 'app.schema/Store
-                  raise "|Invalid hydration Store"
-              _ $ raise "|Unknown application operation"
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.schema/Op)
-            :args $ [] 'Enum
-        'normalize-store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn normalize-store (data)
-            if (struct? data)
-              if (&struct:matches? data Store) (assert-type data 'app.schema/Store) store
-              match (try-decode-map-as data Store)
-                (:ok restored) restored
-                (:err _) store
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
-            :args $ [] 'Dynamic
-        'store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def store
-            Store :states $ {} $ :cursor ([])
-          :examples $ []
-          :schema $ :: 'app.schema/Store
-      :ns $ %{} 'NsEntry (:doc |)
-        :code $ quote $ ns app.schema
-    'app.updater $ %{} 'FileEntry
-      :defs $ {} $ 'updater
-        %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn updater (store op op-id op-time)
-            match op
-              (:states cursor state)
-                Store :states $ decode-map-as (update-state-tree store.:states cursor state) (:: 'Map 'Tag 'Dynamic)
-              (:hydrate-storage data) data
-              _ $ do (println |unknown-op op) store
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
-            :args $ [] 'app.schema/Store 'app.schema/Op 'String 'Number
-      :ns $ %{} 'NsEntry (:doc |)
-        :code $ quote $ ns app.updater
-          :require
-            respo.cursor :refer $ update-state-tree
-            app.schema :refer $ Store normalize-store

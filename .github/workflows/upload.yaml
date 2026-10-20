@@ -47,8 +47,9 @@ jobs:
           test ! -e package.cirru
           calcit edit format
           git diff --exit-code -- calcit.cirru
-          calcit --check-only
-          calcit analyze check-public --ns app.main --ns app.comp.container --ns app.config --ns app.schema --ns app.updater --summary-only
+          calcit --check-only --all-defs
+          calcit fix --workflow strict --verify
+          node --test camera.test.mjs
       - name: Select frontend CDN path
         id: asset-path
         env:
