@@ -8,10 +8,10 @@ Thanks to https://codepen.io/harunpehlivan/pen/xerNpj .
 
 ### Workflow
 
-Use the paired Calcit/procs 0.30.1-alpha.5 candidate, Node 24 and Yarn 4.18.0
-with canonical `calcit.cirru` and `deps.cirru`. Formal 0.30.1 CLI assets and the
-matching npm runtime are not yet available. Respo 0.16.122, UI 0.7.41 and
-js-ffi 0.2.3 use exact formal releases.
+使用者影响：使用精确配套正式 Calcit / `@calcit/procs` **0.30.1**、Node24、Yarn4.18.0，
+规范源码仍为 `calcit.cirru` / `deps.cirru`。依赖正式 Respo0.16.124、UI0.8.0、js-ffi0.2.5
+（传递 Router0.8.37）；升级后完整刷新。摄像头权限、音频关闭、镜像视频、生命周期清理和
+错误提示合同不变，不读取或迁移任何旧存档。本轮不改相机 JS/Calcit 源码或原三项测试。
 
 This page only displays camera video: it no longer runs the template Reel,
 Store, devtools panel or a periodic localStorage writer. Existing `workflow`
@@ -28,13 +28,13 @@ uses js-ffi's existing DOM boundary instead of pretending opaque values are type
 `VITE_BASE_URL` selects frontend asset URLs; local builds remain relative. CI
 uses one prefix for building, COS upload and released v1.2.0's built-in HTML
 reference and public upload verification.
-PR builds use isolated PR/run/attempt base URLs but do not receive deploy secrets or
-upload. Uploads and server deployment run only on main pushes. Runs
+PR builds use relative URLs and retain a three-day frontend artifact for local
+acceptance, without deploy secrets or COS upload. Uploads and server deployment run only on main pushes. Runs
 queue per PR and separately for production without cancellation. Before publishing,
 CI checks current main once; stale revisions skip both COS and server deployment.
 Server source `dist/*` and destination remain unchanged. HTML
-asset URLs deliberately change to COS. There is no separate artifact transfer,
-upload verification script or defensive test suite.
+production asset URLs deliberately point to COS. There is no separate production
+artifact transfer, upload verification script or defensive test suite.
 
 ```bash
 caps --strict --ci
@@ -52,8 +52,9 @@ live edits, without concurrently.
 CI independently resolves declared dependencies, checks canonical source and
 all definitions, verifies the strict workflow, runs three camera lifecycle
 tests and builds the frontend. No new test dependencies or upload checker are
-needed. Local browser acceptance uses a synthetic canvas MediaStream, actual
-DOM/video playback and the actual generated effect method. This does not claim
+needed. Browser acceptance uses a clearly isolated synthetic canvas MediaStream,
+actual DOM/video playback and the generated application, never a hardware device.
+Historical alpha.5 evidence does not replace this formal graph's CI/runtime checks. This does not claim
 real hardware/permission acceptance or production deployment; never enable a
 user's camera or microphone without authorization.
 
