@@ -46,7 +46,7 @@ jobs:
           test ! -e compact.cirru
           test ! -e package.cirru
           calcit edit format
-          git diff --exit-code -- calcit.cirru
+          git diff --quiet -- calcit.cirru
           calcit --check-only --all-defs
           calcit fix --workflow strict --verify --format json | jq -e '.data.workflow.status == "passed" and .diagnostics == []'
           node --test camera.test.mjs

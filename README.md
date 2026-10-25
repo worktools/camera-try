@@ -11,7 +11,9 @@ Thanks to https://codepen.io/harunpehlivan/pen/xerNpj .
 使用者影响：使用精确配套正式 Calcit / `@calcit/procs` **0.30.1**、Node24、Yarn4.18.0，
 规范源码仍为 `calcit.cirru` / `deps.cirru`。依赖正式 Respo0.16.124、UI0.8.0、js-ffi0.2.5
 （传递 Router0.8.37）；升级后完整刷新。摄像头权限、音频关闭、镜像视频、生命周期清理和
-错误提示合同不变，不读取或迁移任何旧存档。本轮不改相机 JS/Calcit 源码或原三项测试。
+错误提示合同不变，不读取或迁移任何旧存档。本轮仅将生命周期分支改为 literal `match`、
+将 DOM 查询结果的 `option:unwrap` 改为 `.unwrap`；分支顺序、默认 Unit 和缺失元素报错行为不变。
+保留实际 `hud!`、相机 JS 与原三项测试；不访问硬件，不合并或部署 Demo。
 
 This page only displays camera video: it no longer runs the template Reel,
 Store, devtools panel or a periodic localStorage writer. Existing `workflow`

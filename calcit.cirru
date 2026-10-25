@@ -69,9 +69,10 @@
             :args $ []
         'effect-load-video $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defeffect effect-load-video () (action el at?)
-            case-default action &unit
+            match action
               :mount $ camera/connect-video! el
               :unmount $ camera/disconnect-video! el
+              _ &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Effect)
             :args $ []
@@ -107,7 +108,7 @@
             :args $ []
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mount-target
-            option:unwrap $ dom/query-selector |.app
+            .unwrap $ dom/query-selector |.app
           :examples $ []
           :schema $ :: 'respo.dom/DomElement
         'reload! $ %{} 'CodeEntry (:doc |)
