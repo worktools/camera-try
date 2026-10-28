@@ -6,7 +6,7 @@
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |js-ffi/
-      :type-slots $ {}
+      :type-slots $ {} $ :dispatch-op |app.main/DispatchOp
   :files $ {}
     'app.camera $ %{} 'FileEntry
       :defs $ {}
@@ -101,6 +101,11 @@
             app.camera :as camera
     'app.main $ %{} 'FileEntry
       :defs $ {}
+        'DispatchOp $ %{} 'CodeEntry
+          :doc "|No-op operation type for the Respo renderer. This camera-only page has no dispatched UI actions."
+          :code $ quote $ defenum DispatchOp (:noop)
+          :examples $ []
+          :schema $ :: 'EnumDef
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (render-app!) (println "|Camera page started.") &unit
           :examples $ []
