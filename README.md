@@ -8,12 +8,14 @@ Thanks to https://codepen.io/harunpehlivan/pen/xerNpj .
 
 ### Workflow
 
-使用者影响：使用精确配套正式 Calcit / `@calcit/procs` **0.30.1**、Node24、Yarn4.18.0，
-规范源码仍为 `calcit.cirru` / `deps.cirru`。依赖正式 Respo0.16.124、UI0.8.0、js-ffi0.2.5
-（传递 Router0.8.37）；升级后完整刷新。摄像头权限、音频关闭、镜像视频、生命周期清理和
-错误提示合同不变，不读取或迁移任何旧存档。本轮仅将生命周期分支改为 literal `match`、
-将 DOM 查询结果的 `option:unwrap` 改为 `.unwrap`；分支顺序、默认 Unit 和缺失元素报错行为不变。
-保留实际 `hud!`、相机 JS 与原三项测试；不访问硬件，不合并或部署 Demo。
+使用者影响：配对升级正式 Calcit / `@calcit/procs` **0.31.0**，使用 Node24、Yarn4.18.0。
+升级后重新安装依赖并完整刷新。Respo0.17.0-alpha.4、UI0.9.0-alpha.4
+（传递 Router0.9.0-alpha.3）仍为已发布的精确 alpha tag，js-ffi 为正式0.2.7；
+不将整个模块图称作稳定正式版。
+
+本次为没有业务事件的相机页面声明空操作 Enum，并显式绑定 Respo 的 dispatch 类型槽，
+不使用 Dynamic 或放宽门禁。相机 JS、原三项测试、实际 `hud!`、音频关闭、镜像视频、
+生命周期清理与错误提示保持；不读取或迁移旧存档，不改变部署路径，不合并或部署 Demo。
 
 This page only displays camera video: it no longer runs the template Reel,
 Store, devtools panel or a periodic localStorage writer. Existing `workflow`
@@ -56,7 +58,7 @@ all definitions, verifies the strict workflow, runs three camera lifecycle
 tests and builds the frontend. No new test dependencies or upload checker are
 needed. Browser acceptance uses a clearly isolated synthetic canvas MediaStream,
 actual DOM/video playback and the generated application, never a hardware device.
-Historical alpha.5 evidence does not replace this formal graph's CI/runtime checks. This does not claim
+Historical alpha.5 evidence does not replace this 0.31.0 graph's CI/runtime checks. This does not claim
 real hardware/permission acceptance or production deployment; never enable a
 user's camera or microphone without authorization.
 
