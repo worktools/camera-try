@@ -8,12 +8,9 @@ Thanks to https://codepen.io/harunpehlivan/pen/xerNpj .
 
 ### Workflow
 
-使用者影响：配对升级正式 Calcit / `@calcit/procs` **0.31.0**，使用 Node24、Yarn4.18.0。
-升级后重新安装依赖并完整刷新。Respo0.17.0-alpha.4、UI0.9.0-alpha.4
-（传递 Router0.9.0-alpha.3）仍为已发布的精确 alpha tag，js-ffi 为正式0.2.7；
-不将整个模块图称作稳定正式版。
+使用正式 Calcit / `@calcit/procs` 0.35.1、Node 24 和 Yarn 4.18.0。升级后重新安装依赖并刷新。正式依赖为 Respo 0.19.4、UI 0.15.1、JS FFI 0.2.13 和 Router 0.12.1。
 
-本次为没有业务事件的相机页面声明空操作 Enum，并显式绑定 Respo 的 dispatch 类型槽，
+页面为没有业务事件的相机页面声明空操作 Enum，并显式绑定 Respo 的 dispatch 类型槽，
 不使用 Dynamic 或放宽门禁。相机 JS、原三项测试、实际 `hud!`、音频关闭、镜像视频、
 生命周期清理与错误提示保持；不读取或迁移旧存档，不改变部署路径，不合并或部署 Demo。
 
@@ -58,7 +55,7 @@ all definitions, verifies the strict workflow, runs three camera lifecycle
 tests and builds the frontend. No new test dependencies or upload checker are
 needed. Browser acceptance uses a clearly isolated synthetic canvas MediaStream,
 actual DOM/video playback and the generated application, never a hardware device.
-Historical alpha.5 evidence does not replace this 0.31.0 graph's CI/runtime checks. This does not claim
+Historical alpha.5 evidence does not replace this 0.35.1 graph's CI/runtime checks. This does not claim
 real hardware/permission acceptance or production deployment; never enable a
 user's camera or microphone without authorization.
 
