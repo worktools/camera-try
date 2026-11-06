@@ -12,21 +12,15 @@
       :defs $ {}
         'CameraAPI $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait CameraAPI
-            .mount! $ :: 'Fn $ {}
-              :args $ [] 'app.camera/CameraAPI 'js-ffi.browser/DomElementHost
-              :return 'Unit
-            .unmount! $ :: 'Fn $ {}
-              :args $ [] 'app.camera/CameraAPI 'js-ffi.browser/DomElementHost
-              :return 'Unit
+            .mount! $ Fn app.camera/CameraAPI js-ffi.browser/DomElementHost $ -> Unit
+            .unmount! $ Fn app.camera/CameraAPI js-ffi.browser/DomElementHost $ -> Unit
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'camera-api $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn camera-api () (js-cast camera 'CameraAPI)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.camera/CameraAPI)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> app.camera/CameraAPI) (:features :js-ffi)
         'connect-video! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn connect-video! (root)
             let
@@ -34,9 +28,7 @@
               api .mount! $ browser/element-host root
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
         'disconnect-video! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn disconnect-video! (root)
             let
@@ -44,9 +36,7 @@
               api .unmount! $ browser/element-host root
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.camera
           :require (|../camera.mjs :default camera) (js-ffi.browser :as browser)
@@ -65,8 +55,7 @@
                     :color $ hsl 0 0 90
                     :font-size 14
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ []
+          :schema $ quote $ Fn (-> respo.schema/Component)
         'effect-load-video $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defeffect effect-load-video () (action el at?)
             match action
@@ -74,8 +63,7 @@
               :unmount $ camera/disconnect-video! el
               _ &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Effect)
-            :args $ []
+          :schema $ quote $ Fn (-> respo.schema/Effect)
         'style-video $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstyle style-video
             {}
@@ -90,7 +78,7 @@
                 :box-shadow $ str-spaced "|0 2px 6px" $ hsl 0 0 0 0.2
                 :translate "|0px 0px"
           :examples $ []
-          :schema $ :: 'String
+          :schema $ quote String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
@@ -105,17 +93,16 @@
           :doc "|No-op operation type for the Respo renderer. This camera-only page has no dispatched UI actions."
           :code $ quote $ defenum DispatchOp (:noop)
           :examples $ []
-          :schema $ :: 'EnumDef
+          :schema $ quote EnumDef
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (render-app!) (println "|Camera page started.") &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
         'mount-target $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def mount-target
             .unwrap $ dom/query-selector |.app
           :examples $ []
-          :schema $ :: 'respo.dom/DomElement
+          :schema $ quote respo.dom/DomElement
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if (js-nullish? build-errors)
@@ -123,15 +110,12 @@
               hud! |error build-errors
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             render-with! mount-target comp-container $ fn (op) &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
