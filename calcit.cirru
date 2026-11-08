@@ -6,7 +6,7 @@
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/ |js-ffi/
-      :type-slots $ {} $ :dispatch-op |app.main/DispatchOp
+      :type-slots $ {} $ :dispatch-op 'app.main/DispatchOp
   :files $ {}
     'app.camera $ %{} 'FileEntry
       :defs $ {}
@@ -28,7 +28,7 @@
               api .mount! $ browser/element-host root
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn respo.dom/DomElement (-> Unit) (:features :js-ffi)
         'disconnect-video! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn disconnect-video! (root)
             let
@@ -36,7 +36,7 @@
               api .unmount! $ browser/element-host root
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn respo.dom/DomElement (-> Unit) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.camera
           :require (|../camera.mjs :default camera) (js-ffi.browser :as browser)
