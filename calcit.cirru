@@ -20,7 +20,7 @@
         'camera-api $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn camera-api () (js-cast camera 'CameraAPI)
           :examples $ []
-          :schema $ quote $ Fn (-> app.camera/CameraAPI) (:features :js-ffi)
+          :schema $ quote $ Fn (-> CameraAPI) (:features :js-ffi)
         'connect-video! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn connect-video! (root)
             let
