@@ -8,7 +8,7 @@ Thanks to https://codepen.io/harunpehlivan/pen/xerNpj .
 
 ### Workflow
 
-使用正式 Calcit / `@calcit/procs` 0.41.1、Node 24 和 Yarn 4.18.0。升级后重新安装依赖并刷新。正式依赖为 Respo 0.19.5、UI 0.15.2、JS FFI 0.2.13 和 Router 0.12.2。
+使用正式 Calcit / `@calcit/procs` 0.42.1、Node 24 和 Yarn 4.18.0。升级后重新安装依赖并刷新。正式依赖为 Respo 0.19.5、UI 0.15.2、JS FFI 0.2.13 和 Router 0.12.2。
 
 页面为没有业务事件的相机页面声明空操作 Enum，并显式绑定 Respo 的 dispatch 类型槽，
 不使用 Dynamic 或放宽门禁。相机 JS、原三项测试、实际 `hud!`、音频关闭、镜像视频、
